@@ -162,7 +162,7 @@ anything real, and it is not what we are doing today.
 
 ---
 
-## 4 · Three secrets
+## 4 · Three secrets and one variable
 
 **Settings → Secrets and variables → Actions → New repository secret.**
 
@@ -176,10 +176,20 @@ anything real, and it is not what we are doing today.
 > the final newline and the error you get back says `invalid format` and
 > nothing else useful.
 
-Your Docker Hub **username** is not on that list. It sits in the workflow
-file in plain sight, because it is not a secret — it is printed on every
-image you have ever pushed. Knowing which of the two is which is most of
-knowing how to handle credentials.
+Now the **Variables** tab, right next to Secrets on the same page:
+
+| Name | Value |
+|---|---|
+| `DOCKERHUB_USER` | your Docker Hub username |
+
+Your username is not on the secrets list, and that is the lesson. It is
+printed on every image you have ever pushed, and GitHub will show it back
+to you any time you ask. A token you paste once and can never read again.
+Two tabs, one page — GitHub built the distinction into the furniture.
+
+> Until `DOCKERHUB_USER` is set, the build and deploy jobs **skip** rather
+> than fail. That is why a freshly forked repo shows a green tick and two
+> greyed-out boxes instead of a red cross.
 
 The agent's own keys — OpenRouter, Supabase, Langfuse — are not on that list
 either. They stay in `~/.env` on the server. The pipeline never calls a
@@ -187,19 +197,18 @@ model, so it never needs a model key.
 
 ---
 
-## 5 · Fill in the six TODOs
+## 5 · Fill in the five TODOs
 
 Open [`.github/workflows/pipeline.yml`](.github/workflows/pipeline.yml).
-Six lines say `TODO`, each with a sentence of reading above it.
+Five lines say `TODO`, each with a sentence of reading above it.
 
 | | What goes there |
 |---|---|
-| 1 | your Docker Hub username |
-| 2 | the name of the secret holding your token |
-| 3 | a second image tag — the commit's own id |
-| 4 | the name of the secret holding your server's address |
-| 5 | the name of the secret holding your key |
-| 6 | the `docker run` line — the one you typed in step 2, word for word |
+| 1 | the name of the secret holding your Docker Hub token |
+| 2 | a second image tag — the commit's own id |
+| 3 | the name of the secret holding your server's address |
+| 4 | the name of the secret holding your key |
+| 5 | the `docker run` line — the one you typed in step 2, word for word |
 
 Commit and push. The first run will probably be red. Open it, read the log,
 find the line. That is the skill.
@@ -288,6 +297,7 @@ different week.
 | **`Permission denied (publickey)`** | right key, wrong user. It is `ubuntu`, not `ec2-user`. |
 | **Deploy is green, the site is old** | you pushed `:latest` but ran a different tag on the server. Check TODO 6. |
 | **`connection timed out` on ssh** | port 22 is still restricted to *My IP*. See [step 3](#3--why-port-22-is-open-to-everyone). |
+| **Build and deploy say "skipped"** | the `DOCKERHUB_USER` variable is not set. Variables tab, not Secrets. |
 | **It worked yesterday, now nothing deploys** | the instance restarted and the IP moved. That is what the Elastic IP prevents — check it is still *associated*. |
 | **The container exits immediately** | `docker logs bank`. Almost always a missing key in `~/.env`. |
 | **It answers, but knows nothing** | `seed-2-knowledge.sql` did not finish. Re-run it in the SQL editor. |

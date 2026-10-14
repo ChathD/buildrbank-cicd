@@ -7,7 +7,8 @@
 #   on a branch ......  test
 #   on main .........   test -> build & push -> deploy -> check it is live
 #
-# Six lines say TODO. Fill those in and the pipeline is yours.
+# One repository variable, three secrets, and five lines that say
+# TODO. Fill those in and the pipeline is yours.
 # =================================================================
 name: Test, build, deploy
 
@@ -23,13 +24,16 @@ on:
   pull_request:
 
 env:
-  # TODO 1 - your Docker Hub username, exactly as you type it to log in.
+  # Your Docker Hub username. You do not type it here - you set it as a
+  # repository VARIABLE, in the same place as the secrets but on the
+  # "Variables" tab next door.
   #
-  # This one is NOT a secret, which is why it sits here in plain sight.
-  # Your username is printed on every image you have ever pushed. The
-  # token below it is the secret. Knowing the difference is most of
-  # knowing how to handle credentials.
-  DOCKERHUB_USER: TODO-your-dockerhub-username
+  # That tab is the whole lesson. A username is not a secret: it is
+  # printed on every image you have ever pushed, and GitHub will happily
+  # show it back to you. A token is a secret: paste it once and even you
+  # cannot read it again. Knowing which is which is most of knowing how
+  # to handle credentials - and GitHub made you a separate tab for it.
+  DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
   IMAGE: buildrbank
 
 # `ubuntu-24.04`, not `ubuntu-latest`. "latest" is a moving target - it
@@ -70,7 +74,10 @@ jobs:
   build:
     name: Build and push
     needs: test                              # red tests, no image. Full stop.
-    if: github.ref == 'refs/heads/main'      # branches stop at the tests
+    # Two conditions. A branch stops at the tests; and so does a repo
+    # where DOCKERHUB_USER has not been set yet, which is why this says
+    # "skipped" rather than "failed" before you have configured anything.
+    if: github.ref == 'refs/heads/main' && vars.DOCKERHUB_USER != ''
     runs-on: ubuntu-24.04
     steps:
       - name: Get the code
@@ -100,7 +107,7 @@ jobs:
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f  # v4.6.0
         with:
           username: ${{ env.DOCKERHUB_USER }}
-          # TODO 2 - the name of the secret holding your Docker Hub token.
+          # TODO 1 - the name of the secret holding your Docker Hub token.
           password: ${{ secrets.TODO_PUT_THE_SECRET_NAME_HERE }}
 
       - name: Build it and push it
@@ -112,7 +119,7 @@ jobs:
           # mismatch you hit by hand cannot happen here.
           platforms: linux/amd64
           push: true
-          # TODO 3 - add a second tag under the first one, the commit's
+          # TODO 2 - add a second tag under the first one, the commit's
           # own id:
           #   ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE }}:${{ github.sha }}
           #
@@ -132,22 +139,22 @@ jobs:
   deploy:
     name: Deploy to EC2
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.DOCKERHUB_USER != ''
     runs-on: ubuntu-24.04
     steps:
       - name: Swap the container
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2  # v1.2.5
         with:
-          # TODO 4 - the secret holding your server's public IP.
+          # TODO 3 - the secret holding your server's public IP.
           host: ${{ secrets.TODO_PUT_THE_SECRET_NAME_HERE }}
           username: ubuntu
-          # TODO 5 - the secret holding your .pem private key.
+          # TODO 4 - the secret holding your .pem private key.
           key: ${{ secrets.TODO_PUT_THE_SECRET_NAME_HERE }}
           script: |
             set -e
             docker pull ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE }}:latest
             docker rm -f bank || true
-            # TODO 6 - the run command. It is the one you typed last week,
+            # TODO 5 - the run command. It is the one you typed last week,
             # word for word. It is in README step 2, under "Start it once,
             # by hand" - except the tag, which is :latest now.
 
