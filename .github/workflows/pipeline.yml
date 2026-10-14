@@ -32,6 +32,11 @@ env:
   DOCKERHUB_USER: TODO-your-dockerhub-username
   IMAGE: buildrbank
 
+# `ubuntu-24.04`, not `ubuntu-latest`. "latest" is a moving target - it
+# became Ubuntu 26 in late 2026 - and a runner changing underneath you
+# produces failures that have nothing to do with anything you changed.
+# Same reasoning as `FROM python:3.12-slim` in the Dockerfile.
+
 jobs:
 
   # ===============================================================
@@ -39,7 +44,7 @@ jobs:
   # ===============================================================
   test:
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get the code
         uses: actions/checkout@v5
@@ -54,7 +59,7 @@ jobs:
         run: pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run the tests
-        run: pytest -q
+        run: python -m pytest -q
       # Notice what is missing: credentials. tests/conftest.py supplies
       # fakes, and nothing in the suite calls a model or a database. That
       # is why this job is safe to run on a pull request from anyone.
@@ -66,7 +71,7 @@ jobs:
     name: Build and push
     needs: test                              # red tests, no image. Full stop.
     if: github.ref == 'refs/heads/main'      # branches stop at the tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get the code
         uses: actions/checkout@v5
@@ -128,7 +133,7 @@ jobs:
     name: Deploy to EC2
     needs: build
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Swap the container
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2  # v1.2.5

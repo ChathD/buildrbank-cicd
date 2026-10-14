@@ -284,6 +284,7 @@ different week.
 | What you see | Where to look |
 |---|---|
 | **`invalid format` in the deploy job** | `EC2_SSH_KEY`. Re-paste the whole `.pem`, BEGIN and END lines included. |
+| **`insufficient scopes` when pushing the image** | The Docker Hub token is read-only. Note that *logging in* still succeeded — the scope only bites at the push, so the error arrives late and blames the wrong step. Generate a new token with **Read & Write**. |
 | **`Permission denied (publickey)`** | right key, wrong user. It is `ubuntu`, not `ec2-user`. |
 | **Deploy is green, the site is old** | you pushed `:latest` but ran a different tag on the server. Check TODO 6. |
 | **`connection timed out` on ssh** | port 22 is still restricted to *My IP*. See [step 3](#3--why-port-22-is-open-to-everyone). |

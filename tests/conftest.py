@@ -13,6 +13,17 @@ places, which is the only way a test is worth anything.
 Nothing in the test suite calls a model or a database, so fakes are enough.
 """
 import os
+import sys
+from pathlib import Path
+
+# Make `import app` work however pytest was started.
+#
+# `python -m pytest` puts the current folder on the import path; a bare
+# `pytest` does not. Without this line the tests pass on your laptop and
+# fail on GitHub with "No module named 'app'" - which is a miserable way
+# to spend twenty minutes. scripts/check.py does the same thing, for the
+# same reason.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 os.environ.setdefault("OPENROUTER_API_KEY", "test-key-not-real")
 os.environ.setdefault("SUPABASE_URL", "https://example.supabase.co")
