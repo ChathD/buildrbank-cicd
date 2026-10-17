@@ -134,7 +134,8 @@ jobs:
           # (Keep the comment OUTSIDE the list below. Under `tags: |` every
           # line is a tag, including one that starts with a #.)
           tags: |
-           ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
